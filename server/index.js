@@ -45,6 +45,21 @@ app.use('/api/auth', authRoutes);
 app.use('/api/documents', documentRoutes);
 app.use('/api/ai', aiRoutes);
 
+// Root route
+app.get('/', (req, res) => {
+  res.json({ 
+    message: 'Collaborative Text Editor API',
+    version: '1.0.0',
+    status: 'running',
+    endpoints: {
+      health: '/health',
+      auth: '/api/auth',
+      documents: '/api/documents',
+      ai: '/api/ai'
+    }
+  });
+});
+
 // Health check
 app.get('/health', (req, res) => {
   res.json({ 
