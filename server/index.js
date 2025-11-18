@@ -44,15 +44,27 @@ console.log('Allowed CORS origins:', allowedOrigins);
 // CORS must be before other middleware
 app.use((req, res, next) => {
   const origin = req.headers.origin;
-  console.log('Request from origin:', origin);
+  const referer = req.headers.referer;
+  console.log('Request from origin:', origin, 'Referer:', referer, 'Path:', req.path);
   
-  if (!origin || allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin || '*');
-    res.header('Access-Control-Allow-Credentials', 'true');
-    res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-    res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept');
-    res.header('Access-Control-Expose-Headers', 'Set-Cookie');
+  // Always set CORS headers for allowed origins
+  if (origin && allowedOrigins.includes(origin)) {
+    res.header('Access-Control-Allow-Origin', origin);
+  } else if (!origin && referer) {
+    // If no origin but has referer, extract and check
+    const refererOrigin = new URL(referer).origin;
+    if (allowedOrigins.includes(refererOrigin)) {
+      res.header('Access-Control-Allow-Origin', refererOrigin);
+    }
+  } else {
+    // Default to wildcard for missing origin (some browsers/tools don't send it)
+    res.header('Access-Control-Allow-Origin', '*');
   }
+  
+  res.header('Access-Control-Allow-Credentials', 'true');
+  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
+  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Cookie');
+  res.header('Access-Control-Expose-Headers', 'Set-Cookie');
   
   // Handle preflight
   if (req.method === 'OPTIONS') {
@@ -61,11 +73,6 @@ app.use((req, res, next) => {
   
   next();
 });
-
-app.use(cors({
-  origin: true,
-  credentials: true
-}));
 
 // Helmet with CORS-friendly configuration
 app.use(helmet({
