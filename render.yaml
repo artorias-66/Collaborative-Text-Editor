@@ -26,7 +26,6 @@ services:
   - type: web
     name: collaborative-editor-frontend
     runtime: static
-    plan: free
     buildCommand: cd client && npm install && npm run build
     staticPublishPath: ./client/build
     envVars:
