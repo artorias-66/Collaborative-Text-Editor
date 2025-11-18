@@ -33,46 +33,34 @@ const io = socketIo(server, {
 connectDB();
 
 // CORS configuration - allow multiple origins
+// Prefer env var CLIENT_URL; allow localhost and matching Render static site
+const FRONTEND_REGEX = /https:\/\/collaborative-editor-frontend(-[a-z0-9]+)?\.onrender\.com/;
 const allowedOrigins = [
   'http://localhost:3000',
-  'https://collaborative-editor-frontend.onrender.com',
   process.env.CLIENT_URL
 ].filter(Boolean);
 
-console.log('Allowed CORS origins:', allowedOrigins);
+console.log('Allowed CORS origins:', allowedOrigins, 'Regex:', FRONTEND_REGEX);
 
-// CORS must be before other middleware
-app.use((req, res, next) => {
-  const origin = req.headers.origin;
-  const referer = req.headers.referer;
-  console.log('Request from origin:', origin, 'Referer:', referer, 'Path:', req.path);
-  
-  // Always set CORS headers for allowed origins
-  if (origin && allowedOrigins.includes(origin)) {
-    res.header('Access-Control-Allow-Origin', origin);
-  } else if (!origin && referer) {
-    // If no origin but has referer, extract and check
-    const refererOrigin = new URL(referer).origin;
-    if (allowedOrigins.includes(refererOrigin)) {
-      res.header('Access-Control-Allow-Origin', refererOrigin);
+// Use cors package with dynamic origin function
+const corsMiddleware = cors({
+  origin: (origin, callback) => {
+    // Allow non-browser requests or health checks with no Origin
+    if (!origin) return callback(null, true);
+
+    if (allowedOrigins.includes(origin) || FRONTEND_REGEX.test(origin)) {
+      return callback(null, true);
     }
-  } else {
-    // Default to wildcard for missing origin (some browsers/tools don't send it)
-    res.header('Access-Control-Allow-Origin', '*');
-  }
-  
-  res.header('Access-Control-Allow-Credentials', 'true');
-  res.header('Access-Control-Allow-Methods', 'GET, POST, PUT, DELETE, OPTIONS, PATCH');
-  res.header('Access-Control-Allow-Headers', 'Content-Type, Authorization, X-Requested-With, Accept, Cookie');
-  res.header('Access-Control-Expose-Headers', 'Set-Cookie');
-  
-  // Handle preflight
-  if (req.method === 'OPTIONS') {
-    return res.sendStatus(204);
-  }
-  
-  next();
+    return callback(new Error('Not allowed by CORS'));
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'X-Requested-With', 'Accept'],
+  exposedHeaders: ['Set-Cookie']
 });
+
+app.use(corsMiddleware);
+app.options('*', corsMiddleware);
 
 // Helmet with CORS-friendly configuration
 app.use(helmet({
