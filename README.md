@@ -551,5 +551,5 @@ ISC
 Built for WorkRadius AI Technologies Pvt Ltd - SDE Intern Assignment
 
 **Assignment Duration**: 6 Hours  
-**Completion Date**: [Insert Date]
+**Completion Date**: Nov 5, 2025
 
