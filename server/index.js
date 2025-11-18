@@ -16,6 +16,9 @@ const socketHandler = require('./websockets/socketHandler');
 const app = express();
 const server = http.createServer(app);
 
+// Behind Render/Cloudflare proxies: trust first proxy for correct IP and HTTPS detection
+app.set('trust proxy', 1);
+
 // Socket.io setup
 const io = socketIo(server, {
   cors: {

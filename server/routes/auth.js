@@ -27,8 +27,8 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, // required for SameSite=None on modern browsers
+      sameSite: 'none', // cross-site frontend/backend on different domains
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -67,8 +67,8 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
 
     res.cookie('token', token, {
       httpOnly: true,
-      secure: process.env.NODE_ENV === 'production',
-      sameSite: 'strict',
+      secure: true, // required for SameSite=None on modern browsers
+      sameSite: 'none', // cross-site frontend/backend on different domains
       maxAge: 7 * 24 * 60 * 60 * 1000 // 7 days
     });
 
@@ -111,7 +111,7 @@ router.get('/me', require('../middleware/auth').authMiddleware, async (req, res)
 
 // Logout
 router.post('/logout', (req, res) => {
-  res.clearCookie('token');
+  res.clearCookie('token', { sameSite: 'none', secure: true, httpOnly: true });
   res.json({ message: 'Logged out successfully' });
 });
 
