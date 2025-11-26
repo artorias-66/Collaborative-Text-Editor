@@ -39,19 +39,48 @@ const Login = ({ onLogin }) => {
   };
 
   return (
-    <Container maxWidth="sm">
-      <Box sx={{ marginTop: 8, display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-        <Paper elevation={3} sx={{ padding: 4, width: '100%' }}>
-          <Typography component="h1" variant="h4" align="center" gutterBottom>
-            Collaborative Text Editor
+    <Container component="main" maxWidth="xs">
+      <Box
+        sx={{
+          marginTop: 8,
+          display: 'flex',
+          flexDirection: 'column',
+          alignItems: 'center',
+        }}
+      >
+        <Paper
+          elevation={6}
+          sx={{
+            padding: 4,
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            background: 'rgba(30, 41, 59, 0.7)',
+            backdropFilter: 'blur(20px)',
+            borderRadius: 4,
+            border: '1px solid rgba(255, 255, 255, 0.1)',
+          }}
+        >
+          <Typography
+            component="h1"
+            variant="h4"
+            sx={{
+              fontWeight: 800,
+              background: 'linear-gradient(45deg, #6366f1, #ec4899)',
+              backgroundClip: 'text',
+              textFillColor: 'transparent',
+              mb: 1,
+            }}
+          >
+            Welcome Back
           </Typography>
-          <Typography variant="h6" align="center" color="text.secondary" gutterBottom>
-            Sign In
+          <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
+            Sign in to continue collaborating
           </Typography>
 
-          {error && <Alert severity="error" sx={{ mb: 2 }}>{error}</Alert>}
+          {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
 
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 3 }}>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
             <TextField
               margin="normal"
               required
@@ -63,6 +92,8 @@ const Login = ({ onLogin }) => {
               autoFocus
               value={formData.email}
               onChange={handleChange}
+              variant="outlined"
+              sx={{ mb: 2 }}
             />
             <TextField
               margin="normal"
@@ -75,20 +106,28 @@ const Login = ({ onLogin }) => {
               autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
+              variant="outlined"
+              sx={{ mb: 3 }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
-              sx={{ mt: 3, mb: 2 }}
+              size="large"
               disabled={loading}
+              sx={{
+                py: 1.5,
+                fontSize: '1rem',
+                textTransform: 'none',
+                borderRadius: 2,
+              }}
             >
               {loading ? 'Signing In...' : 'Sign In'}
             </Button>
-            <Box textAlign="center">
-              <Link to="/register" style={{ textDecoration: 'none', color: 'inherit' }}>
-                <Typography variant="body2" color="primary">
-                  Don't have an account? Sign Up
+            <Box sx={{ mt: 3, textAlign: 'center' }}>
+              <Link to="/register" style={{ textDecoration: 'none' }}>
+                <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
+                  Don't have an account? <span style={{ fontWeight: 700 }}>Sign Up</span>
                 </Typography>
               </Link>
             </Box>

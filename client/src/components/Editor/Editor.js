@@ -228,7 +228,7 @@ const Editor = ({ user, onLogout }) => {
     // Use document content if input is empty
     const plainContent = getPlainText();
     const textToAnalyze = aiInput.trim() || plainContent;
-    
+
     if (!textToAnalyze || textToAnalyze.length === 0) {
       setError('Please enter text to analyze or ensure your document has content');
       return;
@@ -271,10 +271,10 @@ const Editor = ({ user, onLogout }) => {
   const handleApplyAIResult = () => {
     if (aiResult && quillRef.current) {
       const quill = quillRef.current.getEditor();
-      
+
       // Get current selection
       const selection = quill.getSelection(true);
-      
+
       if (selection && selection.length > 0) {
         // Replace selected text
         quill.deleteText(selection.index, selection.length, 'user');
@@ -292,14 +292,14 @@ const Editor = ({ user, onLogout }) => {
           quill.setText(aiResult, 'user');
         }
       }
-      
+
       // Get updated content and update state
       const updatedContent = quill.root.innerHTML;
       setContent(updatedContent);
-      
+
       // Trigger content change handler to sync with server
       handleContentChange(updatedContent, null, 'user', quill);
-      
+
       // Clear AI result and close drawer
       setAiResult('');
       setAiInput('');
@@ -311,7 +311,7 @@ const Editor = ({ user, onLogout }) => {
     toolbar: [
       [{ 'header': [1, 2, 3, false] }],
       ['bold', 'italic', 'underline', 'strike'],
-      [{ 'list': 'ordered'}, { 'list': 'bullet' }],
+      [{ 'list': 'ordered' }, { 'list': 'bullet' }],
       [{ 'color': [] }, { 'background': [] }],
       [{ 'align': [] }],
       ['link', 'image'],
@@ -334,60 +334,90 @@ const Editor = ({ user, onLogout }) => {
   }
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh' }}>
-      <AppBar position="static">
+    <Box sx={{ display: 'flex', flexDirection: 'column', height: '100vh', overflow: 'hidden' }}>
+      <AppBar position="static" color="transparent" elevation={0} sx={{ backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <Toolbar>
-          <IconButton edge="start" color="inherit" onClick={() => navigate('/dashboard')}>
+          <IconButton edge="start" color="inherit" onClick={() => navigate('/dashboard')} sx={{ mr: 2 }}>
             <ArrowBackIcon />
           </IconButton>
           <TextField
             value={title}
             onChange={handleTitleChange}
             variant="standard"
+            placeholder="Untitled Document"
+            InputProps={{
+              disableUnderline: true,
+              sx: { fontSize: '1.5rem', fontWeight: 600, color: '#f8fafc' }
+            }}
             sx={{
               flexGrow: 1,
-              mx: 2,
-              '& .MuiInputBase-input': { color: 'white' },
-              '& .MuiInput-underline:before': { borderBottomColor: 'rgba(255,255,255,0.42)' },
-              '& .MuiInput-underline:hover:before': { borderBottomColor: 'rgba(255,255,255,0.87)' }
+              '& .MuiInputBase-input': {
+                padding: '4px 8px',
+                borderRadius: 1,
+                transition: 'background 0.2s',
+                '&:hover': { background: 'rgba(255,255,255,0.05)' },
+                '&:focus': { background: 'rgba(255,255,255,0.1)' }
+              }
             }}
           />
-          <Box sx={{ display: 'flex', alignItems: 'center', mr: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
             {connectedUsers.length > 0 && (
               <Chip
-                label={`${connectedUsers.length} user${connectedUsers.length > 1 ? 's' : ''} online`}
+                label={`${connectedUsers.length} online`}
                 size="small"
-                sx={{ mr: 1, backgroundColor: 'rgba(255,255,255,0.2)' }}
+                sx={{
+                  backgroundColor: 'rgba(99, 102, 241, 0.2)',
+                  color: '#818cf8',
+                  border: '1px solid rgba(99, 102, 241, 0.3)'
+                }}
               />
             )}
             {lastSaved && (
-              <Typography variant="caption" sx={{ mr: 2 }}>
-                Saved: {new Date(lastSaved).toLocaleTimeString()}
+              <Typography variant="caption" sx={{ color: 'text.secondary' }}>
+                Saved {new Date(lastSaved).toLocaleTimeString()}
               </Typography>
             )}
+            <IconButton
+              color="inherit"
+              onClick={() => setAiDrawerOpen(true)}
+              sx={{
+                background: 'linear-gradient(45deg, #6366f1, #ec4899)',
+                '&:hover': { opacity: 0.9 }
+              }}
+            >
+              <AIIcon />
+            </IconButton>
+            <Button
+              variant="contained"
+              startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
+              onClick={handleManualSave}
+              disabled={saving}
+              sx={{ borderRadius: 2 }}
+            >
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
           </Box>
-          <IconButton color="inherit" onClick={() => setAiDrawerOpen(true)}>
-            <AIIcon />
-          </IconButton>
-          <Button
-            color="inherit"
-            startIcon={saving ? <CircularProgress size={16} color="inherit" /> : <SaveIcon />}
-            onClick={handleManualSave}
-            disabled={saving}
-          >
-            {saving ? 'Saving...' : 'Save'}
-          </Button>
         </Toolbar>
       </AppBar>
 
       {error && (
-        <Alert severity="error" onClose={() => setError('')} sx={{ m: 1 }}>
+        <Alert severity="error" onClose={() => setError('')} sx={{ m: 2 }}>
           {error}
         </Alert>
       )}
 
-      <Box sx={{ flexGrow: 1, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
-        <Box sx={{ flexGrow: 1, '& .ql-container': { height: 'calc(100vh - 200px)' } }}>
+      <Box sx={{ flexGrow: 1, p: 3, overflow: 'hidden', display: 'flex', flexDirection: 'column' }}>
+        <Paper
+          elevation={0}
+          sx={{
+            flexGrow: 1,
+            display: 'flex',
+            flexDirection: 'column',
+            overflow: 'hidden',
+            background: 'transparent',
+            '& .ql-container': { flexGrow: 1, overflow: 'hidden' }
+          }}
+        >
           <ReactQuill
             ref={quillRef}
             theme="snow"
@@ -397,20 +427,39 @@ const Editor = ({ user, onLogout }) => {
             formats={formats}
             style={{ height: '100%', display: 'flex', flexDirection: 'column' }}
           />
-        </Box>
+        </Paper>
       </Box>
 
       <Drawer
         anchor="right"
         open={aiDrawerOpen}
         onClose={() => setAiDrawerOpen(false)}
-        PaperProps={{ sx: { width: 400 } }}
+        PaperProps={{
+          sx: {
+            width: 400,
+            background: '#0f172a',
+            borderLeft: '1px solid rgba(255,255,255,0.1)'
+          }
+        }}
       >
-        <Box sx={{ p: 2 }}>
-          <Typography variant="h6" gutterBottom>
-            AI Writing Assistant
-          </Typography>
-          <Tabs value={aiTab} onChange={(e, v) => setAiTab(v)} sx={{ mb: 2 }}>
+        <Box sx={{ p: 3 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1, mb: 3 }}>
+            <AIIcon sx={{ color: '#ec4899' }} />
+            <Typography variant="h6" sx={{ fontWeight: 700 }}>
+              AI Assistant
+            </Typography>
+          </Box>
+
+          <Tabs
+            value={aiTab}
+            onChange={(e, v) => setAiTab(v)}
+            sx={{
+              mb: 3,
+              '& .MuiTab-root': { minWidth: 'auto', px: 1.5, fontSize: '0.8rem' }
+            }}
+            variant="scrollable"
+            scrollButtons="auto"
+          >
             <Tab label="Grammar" />
             <Tab label="Enhance" />
             <Tab label="Summarize" />
@@ -425,7 +474,8 @@ const Editor = ({ user, onLogout }) => {
             placeholder="Enter text to analyze (leave empty to use document content)"
             value={aiInput}
             onChange={(e) => setAiInput(e.target.value)}
-            sx={{ mb: 2 }}
+            sx={{ mb: 3 }}
+            variant="outlined"
           />
 
           <Button
@@ -433,17 +483,29 @@ const Editor = ({ user, onLogout }) => {
             variant="contained"
             onClick={handleAIRequest}
             disabled={aiLoading}
-            sx={{ mb: 2 }}
+            startIcon={<AIIcon />}
+            sx={{
+              mb: 3,
+              background: 'linear-gradient(45deg, #6366f1, #ec4899)',
+              py: 1.5
+            }}
           >
-            {aiLoading ? 'Processing...' : 'Analyze'}
+            {aiLoading ? 'Processing...' : 'Analyze Text'}
           </Button>
 
           {aiResult && (
-            <Paper sx={{ p: 2, mt: 2 }}>
-              <Typography variant="subtitle2" gutterBottom>
-                AI Result:
+            <Paper
+              sx={{
+                p: 2,
+                background: 'rgba(30, 41, 59, 0.6)',
+                border: '1px solid rgba(255,255,255,0.1)',
+                borderRadius: 2
+              }}
+            >
+              <Typography variant="subtitle2" gutterBottom sx={{ color: '#818cf8' }}>
+                Result:
               </Typography>
-              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2 }}>
+              <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap', mb: 2, color: '#cbd5e1' }}>
                 {aiResult}
               </Typography>
               <Button
@@ -451,6 +513,7 @@ const Editor = ({ user, onLogout }) => {
                 variant="outlined"
                 onClick={handleApplyAIResult}
                 startIcon={<CheckCircleIcon />}
+                size="small"
               >
                 Apply to Document
               </Button>

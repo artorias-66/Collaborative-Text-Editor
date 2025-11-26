@@ -101,88 +101,112 @@ const Dashboard = ({ user, onLogout }) => {
   }
 
   return (
-    <Box sx={{ minHeight: '100vh', backgroundColor: '#f5f5f5' }}>
-      <AppBar position="static">
+    <Box sx={{ minHeight: '100vh', pb: 4 }}>
+      <AppBar position="static" color="transparent" elevation={0} sx={{ backdropFilter: 'blur(10px)', borderBottom: '1px solid rgba(255,255,255,0.1)' }}>
         <Toolbar>
-          <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
-            My Documents
+          <Typography variant="h5" component="div" sx={{ flexGrow: 1, fontWeight: 700, background: 'linear-gradient(45deg, #6366f1, #ec4899)', backgroundClip: 'text', textFillColor: 'transparent' }}>
+            Collaborative Editor
           </Typography>
-          <Typography variant="body2" sx={{ mr: 2 }}>
-            {user?.username}
-          </Typography>
-          <IconButton color="inherit" onClick={onLogout}>
-            <LogoutIcon />
-          </IconButton>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <Typography variant="body1" sx={{ color: 'text.secondary' }}>
+              Welcome, {user?.username}
+            </Typography>
+            <Button color="inherit" onClick={onLogout} startIcon={<LogoutIcon />}>
+              Logout
+            </Button>
+          </Box>
         </Toolbar>
       </AppBar>
 
-      <Container maxWidth="md" sx={{ mt: 4 }}>
+      <Container maxWidth="lg" sx={{ mt: 6 }}>
         {error && (
-          <Alert severity="error" sx={{ mb: 2 }} onClose={() => setError('')}>
+          <Alert severity="error" sx={{ mb: 4 }} onClose={() => setError('')}>
             {error}
           </Alert>
         )}
 
-        <Paper sx={{ p: 3 }}>
-          <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 3 }}>
-            <Typography variant="h5">Documents</Typography>
-            <Button
-              variant="contained"
-              startIcon={<AddIcon />}
-              onClick={() => setOpenDialog(true)}
-            >
-              New Document
-            </Button>
-          </Box>
+        <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', mb: 5 }}>
+          <Typography variant="h4" sx={{ fontWeight: 700 }}>My Documents</Typography>
+          <Button
+            variant="contained"
+            size="large"
+            startIcon={<AddIcon />}
+            onClick={() => setOpenDialog(true)}
+            sx={{ borderRadius: 3, px: 4 }}
+          >
+            New Document
+          </Button>
+        </Box>
 
-          {documents.length === 0 ? (
-            <Typography color="text.secondary" align="center" sx={{ py: 4 }}>
-              No documents yet. Create your first document!
+        {loading ? (
+          <Box sx={{ display: 'flex', justifyContent: 'center', mt: 8 }}>
+            <CircularProgress />
+          </Box>
+        ) : documents.length === 0 ? (
+          <Paper sx={{ p: 6, textAlign: 'center', background: 'rgba(30, 41, 59, 0.4)', backdropFilter: 'blur(10px)' }}>
+            <Typography variant="h6" color="text.secondary" gutterBottom>
+              No documents yet
             </Typography>
-          ) : (
-            <List>
-              {documents.map((doc) => (
-                <ListItem
-                  key={doc._id}
-                  sx={{
-                    border: '1px solid #e0e0e0',
-                    mb: 1,
-                    borderRadius: 1,
-                    '&:hover': { backgroundColor: '#f5f5f5' }
-                  }}
-                  secondaryAction={
-                    <Box>
-                      <IconButton
-                        edge="end"
-                        onClick={() => handleShareDocument(doc._id)}
-                        sx={{ mr: 1 }}
-                      >
-                        <ShareIcon />
-                      </IconButton>
-                      <IconButton
-                        edge="end"
-                        onClick={() => handleDeleteDocument(doc._id)}
-                        color="error"
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
+            <Typography color="text.secondary" paragraph>
+              Create your first document to start collaborating!
+            </Typography>
+            <Button variant="outlined" startIcon={<AddIcon />} onClick={() => setOpenDialog(true)}>
+              Create Document
+            </Button>
+          </Paper>
+        ) : (
+          <Box sx={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(300px, 1fr))', gap: 3 }}>
+            {documents.map((doc) => (
+              <Paper
+                key={doc._id}
+                sx={{
+                  p: 3,
+                  cursor: 'pointer',
+                  transition: 'all 0.3s ease',
+                  background: 'rgba(30, 41, 59, 0.6)',
+                  backdropFilter: 'blur(10px)',
+                  border: '1px solid rgba(255, 255, 255, 0.05)',
+                  '&:hover': {
+                    transform: 'translateY(-5px)',
+                    boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1)',
+                    border: '1px solid rgba(99, 102, 241, 0.5)',
                   }
-                >
-                  <ListItemText
-                    primary={doc.title}
-                    secondary={`Last saved: ${new Date(doc.lastSaved).toLocaleString()}`}
-                    onClick={() => handleOpenDocument(doc._id)}
-                    sx={{ cursor: 'pointer' }}
-                  />
-                </ListItem>
-              ))}
-            </List>
-          )}
-        </Paper>
+                }}
+                onClick={() => handleOpenDocument(doc._id)}
+              >
+                <Box sx={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', mb: 2 }}>
+                  <Typography variant="h6" sx={{ fontWeight: 600, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap', maxWidth: '80%' }}>
+                    {doc.title}
+                  </Typography>
+                  <Box onClick={(e) => e.stopPropagation()}>
+                    <IconButton size="small" onClick={() => handleShareDocument(doc._id)} sx={{ color: 'primary.light' }}>
+                      <ShareIcon fontSize="small" />
+                    </IconButton>
+                    <IconButton size="small" onClick={() => handleDeleteDocument(doc._id)} sx={{ color: 'error.light' }}>
+                      <DeleteIcon fontSize="small" />
+                    </IconButton>
+                  </Box>
+                </Box>
+                <Typography variant="caption" color="text.secondary" display="block">
+                  Last saved: {new Date(doc.lastSaved).toLocaleDateString()} at {new Date(doc.lastSaved).toLocaleTimeString()}
+                </Typography>
+              </Paper>
+            ))}
+          </Box>
+        )}
       </Container>
 
-      <Dialog open={openDialog} onClose={() => setOpenDialog(false)}>
+      <Dialog
+        open={openDialog}
+        onClose={() => setOpenDialog(false)}
+        PaperProps={{
+          sx: {
+            background: '#1e293b',
+            backgroundImage: 'none',
+            border: '1px solid rgba(255, 255, 255, 0.1)'
+          }
+        }}
+      >
         <DialogTitle>Create New Document</DialogTitle>
         <DialogContent>
           <TextField
@@ -198,10 +222,11 @@ const Dashboard = ({ user, onLogout }) => {
                 handleCreateDocument();
               }
             }}
+            sx={{ mt: 1 }}
           />
         </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpenDialog(false)}>Cancel</Button>
+        <DialogActions sx={{ px: 3, pb: 3 }}>
+          <Button onClick={() => setOpenDialog(false)} color="inherit">Cancel</Button>
           <Button onClick={handleCreateDocument} variant="contained">
             Create
           </Button>
