@@ -1,6 +1,9 @@
 # Collaborative Text Editor with AI Assistant
 
 A real-time collaborative text editor built with React, Node.js, MongoDB, Socket.io, and Google Gemini AI.
+    
+## 🚀 Live Demo
+[https://collaborative-editor-frontend.onrender.com](https://collaborative-editor-frontend.onrender.com)
 
 ## Features
 
