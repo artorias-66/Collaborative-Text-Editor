@@ -35,7 +35,7 @@ function App() {
     }
   };
 
-  const handleLogin = (userData) => {
+  const handleLogin = (userData: any) => {
     setUser(userData);
   };
 

@@ -1,18 +1,19 @@
-const { body, validationResult } = require('express-validator');
-const xss = require('xss');
+import { body, validationResult } from 'express-validator';
+import xss from 'xss';
+import { Request, Response, NextFunction } from 'express';
 
-const validate = (req, res, next) => {
+export const validate = (req: Request, res: Response, next: NextFunction) => {
   const errors = validationResult(req);
   if (!errors.isEmpty()) {
     // Format errors for better frontend handling
-    const formattedErrors = errors.array().map(err => ({
+    const formattedErrors = errors.array().map((err: any) => ({
       field: err.path || err.param,
       message: err.msg
     }));
-    
+
     // Return first error message as a simple string for compatibility
-    const firstError = errors.array()[0];
-    return res.status(400).json({ 
+    const firstError: any = errors.array()[0];
+    return res.status(400).json({
       error: firstError.msg || 'Validation failed',
       errors: formattedErrors
     });
@@ -21,7 +22,7 @@ const validate = (req, res, next) => {
 };
 
 // Sanitize string inputs
-const sanitizeInput = (req, res, next) => {
+export const sanitizeInput = (req: Request, res: Response, next: NextFunction) => {
   if (req.body.title) {
     req.body.title = xss(req.body.title.trim());
   }
@@ -33,7 +34,7 @@ const sanitizeInput = (req, res, next) => {
 };
 
 // Validation rules
-const registerValidation = [
+export const registerValidation = [
   body('username')
     .trim()
     .isLength({ min: 3, max: 30 })
@@ -50,13 +51,13 @@ const registerValidation = [
   validate
 ];
 
-const loginValidation = [
+export const loginValidation = [
   body('email').isEmail().normalizeEmail(),
   body('password').notEmpty(),
   validate
 ];
 
-const documentValidation = [
+export const documentValidation = [
   body('title')
     .optional()
     .trim()
@@ -65,12 +66,4 @@ const documentValidation = [
   validate,
   sanitizeInput
 ];
-
-module.exports = {
-  validate,
-  sanitizeInput,
-  registerValidation,
-  loginValidation,
-  documentValidation
-};
 

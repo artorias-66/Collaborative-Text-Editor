@@ -11,28 +11,28 @@ import {
 } from '@mui/material';
 import { authAPI } from '../../services/api';
 
-const Login = ({ onLogin }) => {
-  const [formData, setFormData] = useState({ email: '', password: '' });
+const Register = ({ onLogin }: { onLogin: (user: any) => void }) => {
+  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const response = await authAPI.login(formData);
+      const response = await authAPI.register(formData);
       onLogin(response.data.user);
       navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Login failed');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Registration failed');
     } finally {
       setLoading(false);
     }
@@ -66,16 +66,16 @@ const Login = ({ onLogin }) => {
             variant="h4"
             sx={{
               fontWeight: 800,
-              background: 'linear-gradient(45deg, #6366f1, #ec4899)',
+              background: 'linear-gradient(45deg, #ec4899, #6366f1)',
               backgroundClip: 'text',
               textFillColor: 'transparent',
               mb: 1,
             }}
           >
-            Welcome Back
+            Create Account
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Sign in to continue collaborating
+            Join us and start creating together
           </Typography>
 
           {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
@@ -85,11 +85,24 @@ const Login = ({ onLogin }) => {
               margin="normal"
               required
               fullWidth
+              id="username"
+              label="Username"
+              name="username"
+              autoComplete="username"
+              autoFocus
+              value={formData.username}
+              onChange={handleChange}
+              variant="outlined"
+              sx={{ mb: 2 }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
               id="email"
               label="Email Address"
               name="email"
               autoComplete="email"
-              autoFocus
               value={formData.email}
               onChange={handleChange}
               variant="outlined"
@@ -103,7 +116,7 @@ const Login = ({ onLogin }) => {
               label="Password"
               type="password"
               id="password"
-              autoComplete="current-password"
+              autoComplete="new-password"
               value={formData.password}
               onChange={handleChange}
               variant="outlined"
@@ -122,12 +135,12 @@ const Login = ({ onLogin }) => {
                 borderRadius: 2,
               }}
             >
-              {loading ? 'Signing In...' : 'Sign In'}
+              {loading ? 'Signing Up...' : 'Sign Up'}
             </Button>
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Link to="/register" style={{ textDecoration: 'none' }}>
+              <Link to="/login" style={{ textDecoration: 'none' }}>
                 <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-                  Don't have an account? <span style={{ fontWeight: 700 }}>Sign Up</span>
+                  Already have an account? <span style={{ fontWeight: 700 }}>Sign In</span>
                 </Typography>
               </Link>
             </Box>
@@ -138,5 +151,6 @@ const Login = ({ onLogin }) => {
   );
 };
 
-export default Login;
+export default Register;
+
 

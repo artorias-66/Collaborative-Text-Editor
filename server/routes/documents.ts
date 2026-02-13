@@ -1,13 +1,13 @@
-const express = require('express');
-const Document = require('../models/Document');
-const { authMiddleware } = require('../middleware/auth');
-const { documentValidation } = require('../middleware/validation');
-const { apiLimiter } = require('../middleware/rateLimiter');
+import express from 'express';
+import Document from '../models/Document';
+import { authMiddleware } from '../middleware/auth';
+import { documentValidation } from '../middleware/validation';
+import { apiLimiter } from '../middleware/rateLimiter';
 
 const router = express.Router();
 
 // Get all user's documents
-router.get('/', authMiddleware, apiLimiter, async (req, res) => {
+router.get('/', authMiddleware, apiLimiter, async (req: any, res: any) => {
   try {
     const documents = await Document.find({
       $or: [
@@ -15,9 +15,9 @@ router.get('/', authMiddleware, apiLimiter, async (req, res) => {
         { 'permissions.user': req.user.userId }
       ]
     })
-    .populate('owner', 'username email')
-    .sort({ updatedAt: -1 })
-    .select('-content'); // Don't send full content in list
+      .populate('owner', 'username email')
+      .sort({ updatedAt: -1 })
+      .select('-content'); // Don't send full content in list
 
     res.json({ documents });
   } catch (error) {
@@ -27,7 +27,7 @@ router.get('/', authMiddleware, apiLimiter, async (req, res) => {
 });
 
 // Create new document
-router.post('/', authMiddleware, apiLimiter, documentValidation, async (req, res) => {
+router.post('/', authMiddleware, apiLimiter, documentValidation, async (req: any, res: any) => {
   try {
     const { title, content } = req.body;
 
@@ -51,7 +51,7 @@ router.post('/', authMiddleware, apiLimiter, documentValidation, async (req, res
 });
 
 // Get specific document
-router.get('/:id', authMiddleware, apiLimiter, async (req, res) => {
+router.get('/:id', authMiddleware, apiLimiter, async (req: any, res: any) => {
   try {
     const document = await Document.findById(req.params.id)
       .populate('owner', 'username email')
@@ -62,7 +62,7 @@ router.get('/:id', authMiddleware, apiLimiter, async (req, res) => {
     }
 
     // Check permissions
-    if (!document.hasPermission(req.user.userId, 'viewer')) {
+    if (!(document as any).hasPermission(req.user.userId, 'viewer')) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -74,7 +74,7 @@ router.get('/:id', authMiddleware, apiLimiter, async (req, res) => {
 });
 
 // Update document
-router.put('/:id', authMiddleware, apiLimiter, documentValidation, async (req, res) => {
+router.put('/:id', authMiddleware, apiLimiter, documentValidation, async (req: any, res: any) => {
   try {
     const document = await Document.findById(req.params.id);
 
@@ -83,7 +83,7 @@ router.put('/:id', authMiddleware, apiLimiter, documentValidation, async (req, r
     }
 
     // Check permissions
-    if (!document.hasPermission(req.user.userId, 'editor')) {
+    if (!(document as any).hasPermission(req.user.userId, 'editor')) {
       return res.status(403).json({ error: 'Access denied' });
     }
 
@@ -105,7 +105,7 @@ router.put('/:id', authMiddleware, apiLimiter, documentValidation, async (req, r
 });
 
 // Delete document
-router.delete('/:id', authMiddleware, apiLimiter, async (req, res) => {
+router.delete('/:id', authMiddleware, apiLimiter, async (req: any, res: any) => {
   try {
     const document = await Document.findById(req.params.id);
 
@@ -128,7 +128,7 @@ router.delete('/:id', authMiddleware, apiLimiter, async (req, res) => {
 });
 
 // Generate share link
-router.post('/:id/share', authMiddleware, apiLimiter, async (req, res) => {
+router.post('/:id/share', authMiddleware, apiLimiter, async (req: any, res: any) => {
   try {
     const document = await Document.findById(req.params.id);
 
@@ -141,7 +141,7 @@ router.post('/:id/share', authMiddleware, apiLimiter, async (req, res) => {
       return res.status(403).json({ error: 'Only owner can generate share link' });
     }
 
-    const shareLink = document.generateShareLink();
+    const shareLink = (document as any).generateShareLink();
     await document.save();
 
     res.json({ shareLink: `${process.env.CLIENT_URL}/document/${shareLink}` });
@@ -152,7 +152,7 @@ router.post('/:id/share', authMiddleware, apiLimiter, async (req, res) => {
 });
 
 // Get document by share link
-router.get('/share/:shareLink', async (req, res) => {
+router.get('/share/:shareLink', async (req: any, res: any) => {
   try {
     const document = await Document.findOne({ shareLink: req.params.shareLink })
       .populate('owner', 'username email');
@@ -168,5 +168,5 @@ router.get('/share/:shareLink', async (req, res) => {
   }
 });
 
-module.exports = router;
+export default router;
 

@@ -4,6 +4,10 @@ import Cookies from 'js-cookie';
 const SOCKET_URL = process.env.REACT_APP_SOCKET_URL || 'http://localhost:5000';
 
 class SocketService {
+  socket: any;
+  listeners: Map<string, any>;
+  connectionPromise: Promise<any> | null;
+
   constructor() {
     this.socket = null;
     this.listeners = new Map();
@@ -20,7 +24,7 @@ class SocketService {
     }
 
     const token = Cookies.get('token');
-    
+
     this.connectionPromise = new Promise((resolve, reject) => {
       this.socket = io(SOCKET_URL, {
         auth: { token },
@@ -38,13 +42,13 @@ class SocketService {
         this.connectionPromise = null;
       });
 
-      this.socket.on('connect_error', (error) => {
+      this.socket.on('connect_error', (error: any) => {
         console.error('Socket connection error:', error);
         this.connectionPromise = null;
         reject(error);
       });
 
-      this.socket.on('error', (error) => {
+      this.socket.on('error', (error: any) => {
         console.error('Socket error:', error);
       });
 
@@ -57,7 +61,7 @@ class SocketService {
     return this.connectionPromise;
   }
 
-  async emit(event, data) {
+  async emit(event: string, data: any) {
     if (this.socket?.connected) {
       this.socket.emit(event, data);
     } else {
@@ -72,27 +76,27 @@ class SocketService {
     }
   }
 
-  async joinDocument(documentId) {
+  async joinDocument(documentId: string) {
     await this.emit('join-document', documentId);
   }
 
-  async leaveDocument(documentId) {
+  async leaveDocument(documentId: string) {
     await this.emit('leave-document', documentId);
   }
 
-  async sendTextChange(documentId, delta, content) {
+  async sendTextChange(documentId: string, delta: any, content: any) {
     await this.emit('text-change', { documentId, delta, content });
   }
 
-  async sendCursorMove(documentId, range) {
+  async sendCursorMove(documentId: string, range: any) {
     await this.emit('cursor-move', { documentId, range });
   }
 
-  async saveDocument(documentId, content, title) {
+  async saveDocument(documentId: string, content: any, title: string) {
     await this.emit('save-document', { documentId, content, title });
   }
 
-  async requestAIAnalysis(documentId, text, type) {
+  async requestAIAnalysis(documentId: string, text: string, type: string) {
     await this.emit('ai-analyze-text', { documentId, text, type });
   }
 
@@ -104,14 +108,14 @@ class SocketService {
     }
   }
 
-  on(event, callback) {
+  on(event: string, callback: any) {
     this.listeners.set(event, callback);
     if (this.socket) {
       this.socket.on(event, callback);
     }
   }
 
-  off(event) {
+  off(event: string) {
     this.listeners.delete(event);
     if (this.socket) {
       this.socket.off(event);

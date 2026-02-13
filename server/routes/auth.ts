@@ -1,19 +1,19 @@
-const express = require('express');
-const User = require('../models/User');
-const { generateToken } = require('../middleware/auth');
-const { registerValidation, loginValidation } = require('../middleware/validation');
-const { authLimiter } = require('../middleware/rateLimiter');
+import express from 'express';
+import User from '../models/User';
+import { generateToken } from '../middleware/auth';
+import { registerValidation, loginValidation } from '../middleware/validation';
+import { authLimiter } from '../middleware/rateLimiter';
 
 const router = express.Router();
 
 // Register
-router.post('/register', authLimiter, registerValidation, async (req, res) => {
+router.post('/register', authLimiter, registerValidation, async (req: any, res: any) => {
   try {
     const { username, email, password } = req.body;
 
     // Check if user already exists
-    const existingUser = await User.findOne({ 
-      $or: [{ email }, { username }] 
+    const existingUser = await User.findOne({
+      $or: [{ email }, { username }]
     });
 
     if (existingUser) {
@@ -23,7 +23,7 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
     const user = new User({ username, email, password });
     await user.save();
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id.toString());
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -49,7 +49,7 @@ router.post('/register', authLimiter, registerValidation, async (req, res) => {
 });
 
 // Login
-router.post('/login', authLimiter, loginValidation, async (req, res) => {
+router.post('/login', authLimiter, loginValidation, async (req: any, res: any) => {
   try {
     const { email, password } = req.body;
 
@@ -58,12 +58,12 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const isMatch = await user.comparePassword(password);
+    const isMatch = await (user as any).comparePassword(password);
     if (!isMatch) {
       return res.status(401).json({ error: 'Invalid credentials' });
     }
 
-    const token = generateToken(user._id);
+    const token = generateToken(user._id.toString());
 
     res.cookie('token', token, {
       httpOnly: true,
@@ -89,13 +89,16 @@ router.post('/login', authLimiter, loginValidation, async (req, res) => {
 });
 
 // Get current user
-router.get('/me', require('../middleware/auth').authMiddleware, async (req, res) => {
+// Need to use any for middleware import if it's tricky, but I improved auth.ts exports
+import { authMiddleware } from '../middleware/auth';
+
+router.get('/me', authMiddleware, async (req: any, res: any) => {
   try {
     const user = await User.findById(req.user.userId).select('-password');
     if (!user) {
       return res.status(404).json({ error: 'User not found' });
     }
-    res.json({ 
+    res.json({
       user: {
         id: user._id.toString(),
         _id: user._id.toString(),
@@ -110,10 +113,10 @@ router.get('/me', require('../middleware/auth').authMiddleware, async (req, res)
 });
 
 // Logout
-router.post('/logout', (req, res) => {
+router.post('/logout', (req: any, res: any) => {
   res.clearCookie('token', { sameSite: 'none', secure: true, httpOnly: true });
   res.json({ message: 'Logged out successfully' });
 });
 
-module.exports = router;
+export default router;
 

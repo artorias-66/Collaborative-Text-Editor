@@ -1,4 +1,4 @@
-const mongoose = require('mongoose');
+import mongoose from 'mongoose';
 
 const permissionSchema = new mongoose.Schema({
   user: {
@@ -42,57 +42,61 @@ const documentSchema = new mongoose.Schema({
   isPublic: {
     type: Boolean,
     default: false
+  },
+  yjsState: {
+    type: Buffer,
+    default: null
   }
 }, {
   timestamps: true
 });
 
 // Generate share link
-documentSchema.methods.generateShareLink = function() {
-  const randomString = Math.random().toString(36).substring(2, 15) + 
-                       Math.random().toString(36).substring(2, 15);
+documentSchema.methods.generateShareLink = function () {
+  const randomString = Math.random().toString(36).substring(2, 15) +
+    Math.random().toString(36).substring(2, 15);
   this.shareLink = randomString;
   return this.shareLink;
 };
 
 // Check if user has permission
-documentSchema.methods.hasPermission = function(userId, requiredRole) {
+documentSchema.methods.hasPermission = function (userId: any, requiredRole: string) {
   if (!userId) return false;
-  
+
   // Convert both to strings for comparison
   const userIdStr = userId.toString();
-  
+
   // Handle populated owner (object with _id) or direct ObjectId
   let ownerStr;
-  if (this.owner && typeof this.owner === 'object' && this.owner._id) {
-    ownerStr = this.owner._id.toString();
+  if (this.owner && typeof this.owner === 'object' && (this.owner as any)._id) {
+    ownerStr = (this.owner as any)._id.toString();
   } else if (this.owner) {
     ownerStr = this.owner.toString();
   }
-  
+
   // Owner always has access
   if (ownerStr && userIdStr && ownerStr === userIdStr) {
     return true;
   }
-  
+
   // Check permissions array
-  const permission = this.permissions.find(p => {
+  const permission = this.permissions.find((p: any) => {
     if (!p.user) return false;
     // Handle populated permission user (object with _id) or direct ObjectId
     let permissionUserIdStr;
-    if (typeof p.user === 'object' && p.user._id) {
-      permissionUserIdStr = p.user._id.toString();
+    if (typeof p.user === 'object' && (p.user as any)._id) {
+      permissionUserIdStr = (p.user as any)._id.toString();
     } else {
       permissionUserIdStr = p.user.toString();
     }
     return permissionUserIdStr === userIdStr;
   });
-  
+
   if (!permission) return false;
-  
-  const roleHierarchy = { viewer: 0, editor: 1, owner: 2 };
+
+  const roleHierarchy: any = { viewer: 0, editor: 1, owner: 2 };
   return roleHierarchy[permission.role] >= roleHierarchy[requiredRole];
 };
 
-module.exports = mongoose.model('Document', documentSchema);
+export default mongoose.model('Document', documentSchema);
 

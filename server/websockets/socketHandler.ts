@@ -1,27 +1,27 @@
-const Document = require('../models/Document');
-const jwt = require('jsonwebtoken');
+import Document from '../models/Document';
+import geminiService from '../services/gemini';
 
-const socketHandler = (socket, io) => {
+const socketHandler = (socket: any, io: any) => {
   console.log(`User connected: ${socket.userId}`);
 
   // Join document room
-  socket.on('join-document', async (documentId) => {
+  socket.on('join-document', async (documentId: string) => {
     try {
       const document = await Document.findById(documentId);
-      
+
       if (!document) {
         socket.emit('error', { message: 'Document not found' });
         return;
       }
 
       // Check permissions
-      if (!document.hasPermission(socket.userId, 'viewer')) {
+      if (!(document as any).hasPermission(socket.userId, 'viewer')) {
         socket.emit('error', { message: 'Access denied' });
         return;
       }
 
       socket.join(`document:${documentId}`);
-      
+
       // Notify others in the room
       socket.to(`document:${documentId}`).emit('user-joined', {
         userId: socket.userId,
@@ -42,7 +42,7 @@ const socketHandler = (socket, io) => {
   });
 
   // Leave document room
-  socket.on('leave-document', (documentId) => {
+  socket.on('leave-document', (documentId: string) => {
     socket.leave(`document:${documentId}`);
     socket.to(`document:${documentId}`).emit('user-left', {
       userId: socket.userId,
@@ -52,13 +52,13 @@ const socketHandler = (socket, io) => {
   });
 
   // Handle text changes
-  socket.on('text-change', async (data) => {
+  socket.on('text-change', async (data: any) => {
     try {
       const { documentId, delta, content } = data;
 
       // Verify user has access
       const document = await Document.findById(documentId);
-      if (!document || !document.hasPermission(socket.userId, 'editor')) {
+      if (!document || !(document as any).hasPermission(socket.userId, 'editor')) {
         socket.emit('error', { message: 'Access denied' });
         return;
       }
@@ -80,7 +80,7 @@ const socketHandler = (socket, io) => {
   });
 
   // Handle cursor movement
-  socket.on('cursor-move', (data) => {
+  socket.on('cursor-move', (data: any) => {
     const { documentId, range } = data;
     socket.to(`document:${documentId}`).emit('cursor-move', {
       userId: socket.userId,
@@ -90,12 +90,12 @@ const socketHandler = (socket, io) => {
   });
 
   // Handle manual save
-  socket.on('save-document', async (data) => {
+  socket.on('save-document', async (data: any) => {
     try {
       const { documentId, content, title } = data;
 
       const document = await Document.findById(documentId);
-      if (!document || !document.hasPermission(socket.userId, 'editor')) {
+      if (!document || !(document as any).hasPermission(socket.userId, 'editor')) {
         socket.emit('error', { message: 'Access denied' });
         return;
       }
@@ -123,14 +123,13 @@ const socketHandler = (socket, io) => {
   });
 
   // Handle AI analysis request
-  socket.on('ai-analyze-text', async (data) => {
+  socket.on('ai-analyze-text', async (data: any) => {
     try {
       const { documentId, text, type } = data;
 
       // Emit processing status
       socket.emit('ai-processing', { status: 'processing' });
 
-      const geminiService = require('../services/gemini');
       let result;
 
       switch (type) {
@@ -152,7 +151,7 @@ const socketHandler = (socket, io) => {
         result,
         timestamp: new Date()
       });
-    } catch (error) {
+    } catch (error: any) {
       console.error('AI analysis error:', error);
       socket.emit('ai-error', { message: error.message || 'AI service error' });
     }
@@ -164,5 +163,5 @@ const socketHandler = (socket, io) => {
   });
 };
 
-module.exports = socketHandler;
+export default socketHandler;
 

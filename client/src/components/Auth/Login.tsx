@@ -11,28 +11,28 @@ import {
 } from '@mui/material';
 import { authAPI } from '../../services/api';
 
-const Register = ({ onLogin }) => {
-  const [formData, setFormData] = useState({ username: '', email: '', password: '' });
+const Login = ({ onLogin }: { onLogin: (user: any) => void }) => {
+  const [formData, setFormData] = useState({ email: '', password: '' });
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
-  const handleChange = (e) => {
+  const handleChange = (e: any) => {
     setFormData({ ...formData, [e.target.name]: e.target.value });
     setError('');
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: any) => {
     e.preventDefault();
     setLoading(true);
     setError('');
 
     try {
-      const response = await authAPI.register(formData);
+      const response = await authAPI.login(formData);
       onLogin(response.data.user);
       navigate('/dashboard');
-    } catch (err) {
-      setError(err.response?.data?.error || 'Registration failed');
+    } catch (err: any) {
+      setError(err.response?.data?.error || 'Login failed');
     } finally {
       setLoading(false);
     }
@@ -66,16 +66,16 @@ const Register = ({ onLogin }) => {
             variant="h4"
             sx={{
               fontWeight: 800,
-              background: 'linear-gradient(45deg, #ec4899, #6366f1)',
+              background: 'linear-gradient(45deg, #6366f1, #ec4899)',
               backgroundClip: 'text',
               textFillColor: 'transparent',
               mb: 1,
             }}
           >
-            Create Account
+            Welcome Back
           </Typography>
           <Typography variant="body2" color="text.secondary" sx={{ mb: 3 }}>
-            Join us and start creating together
+            Sign in to continue collaborating
           </Typography>
 
           {error && <Alert severity="error" sx={{ width: '100%', mb: 2 }}>{error}</Alert>}
@@ -85,24 +85,11 @@ const Register = ({ onLogin }) => {
               margin="normal"
               required
               fullWidth
-              id="username"
-              label="Username"
-              name="username"
-              autoComplete="username"
-              autoFocus
-              value={formData.username}
-              onChange={handleChange}
-              variant="outlined"
-              sx={{ mb: 2 }}
-            />
-            <TextField
-              margin="normal"
-              required
-              fullWidth
               id="email"
               label="Email Address"
               name="email"
               autoComplete="email"
+              autoFocus
               value={formData.email}
               onChange={handleChange}
               variant="outlined"
@@ -116,7 +103,7 @@ const Register = ({ onLogin }) => {
               label="Password"
               type="password"
               id="password"
-              autoComplete="new-password"
+              autoComplete="current-password"
               value={formData.password}
               onChange={handleChange}
               variant="outlined"
@@ -135,12 +122,12 @@ const Register = ({ onLogin }) => {
                 borderRadius: 2,
               }}
             >
-              {loading ? 'Signing Up...' : 'Sign Up'}
+              {loading ? 'Signing In...' : 'Sign In'}
             </Button>
             <Box sx={{ mt: 3, textAlign: 'center' }}>
-              <Link to="/login" style={{ textDecoration: 'none' }}>
+              <Link to="/register" style={{ textDecoration: 'none' }}>
                 <Typography variant="body2" color="primary" sx={{ fontWeight: 500 }}>
-                  Already have an account? <span style={{ fontWeight: 700 }}>Sign In</span>
+                  Don't have an account? <span style={{ fontWeight: 700 }}>Sign Up</span>
                 </Typography>
               </Link>
             </Box>
@@ -151,6 +138,5 @@ const Register = ({ onLogin }) => {
   );
 };
 
-export default Register;
-
+export default Login;
 

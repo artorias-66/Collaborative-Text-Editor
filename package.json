@@ -9,14 +9,20 @@
     "client": "cd client && npm start",
     "install-all": "npm install && cd server && npm install && cd ../client && npm install",
     "build": "cd client && npm install && npm run build",
-    "start": "cd server && npm start"
+    "start": "cd server && npm start",
+    "test:e2e": "playwright test"
   },
-  "keywords": ["collaborative", "editor", "ai", "real-time"],
+  "keywords": [
+    "collaborative",
+    "editor",
+    "ai",
+    "real-time"
+  ],
   "author": "",
   "license": "ISC",
   "devDependencies": {
+    "@playwright/test": "^1.58.2",
+    "@types/node": "^25.2.3",
     "concurrently": "^8.2.2"
   }
 }
-
-

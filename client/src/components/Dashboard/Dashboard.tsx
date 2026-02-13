@@ -18,7 +18,8 @@ import {
   DialogActions,
   TextField,
   Alert,
-  CircularProgress
+  CircularProgress,
+  Snackbar
 } from '@mui/material';
 import {
   Add as AddIcon,
@@ -29,13 +30,20 @@ import {
 } from '@mui/icons-material';
 import { documentAPI } from '../../services/api';
 
-const Dashboard = ({ user, onLogout }) => {
-  const [documents, setDocuments] = useState([]);
+interface Document {
+  _id: string;
+  title: string;
+  lastSaved: string;
+}
+
+const Dashboard = ({ user, onLogout }: { user: any, onLogout: () => void }) => {
+  const [documents, setDocuments] = useState<Document[]>([]);
   const [loading, setLoading] = useState(true);
   const [openDialog, setOpenDialog] = useState(false);
   const [newDocTitle, setNewDocTitle] = useState('');
   const [error, setError] = useState('');
   const [shareLink, setShareLink] = useState('');
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -62,33 +70,35 @@ const Dashboard = ({ user, onLogout }) => {
     try {
       const response = await documentAPI.createDocument({ title: newDocTitle });
       navigate(`/document/${response.data.document._id}`);
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to create document');
     }
   };
 
-  const handleDeleteDocument = async (id) => {
+  const handleDeleteDocument = async (id: string) => {
     if (!window.confirm('Are you sure you want to delete this document?')) return;
 
     try {
       await documentAPI.deleteDocument(id);
       loadDocuments();
-    } catch (err) {
+    } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to delete document');
     }
   };
 
-  const handleShareDocument = async (id) => {
+  const handleShareDocument = async (id: string) => {
     try {
       const response = await documentAPI.shareDocument(id);
-      setShareLink(response.data.shareLink);
-      alert(`Share link: ${response.data.shareLink}`);
-    } catch (err) {
+      const link = response.data.shareLink;
+      setShareLink(link);
+      await navigator.clipboard.writeText(link);
+      setSnackbarOpen(true);
+    } catch (err: any) {
       setError(err.response?.data?.error || 'Failed to generate share link');
     }
   };
 
-  const handleOpenDocument = (id) => {
+  const handleOpenDocument = (id: string) => {
     navigate(`/document/${id}`);
   };
 
@@ -232,6 +242,14 @@ const Dashboard = ({ user, onLogout }) => {
           </Button>
         </DialogActions>
       </Dialog>
+
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={2000}
+        onClose={() => setSnackbarOpen(false)}
+        message="Link copied!"
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'center' }}
+      />
     </Box>
   );
 };
