@@ -3,7 +3,7 @@ node_modules/
 package-lock.json
 yarn.lock
 
-# Environment variables (CRITICAL - Never commit these!)
+# Environment variables
 .env
 .env.local
 .env.development
@@ -16,7 +16,6 @@ client/.env
 # Build outputs
 dist/
 build/
-*.log
 
 # IDE and editor files
 .idea/
@@ -28,31 +27,29 @@ build/
 Thumbs.db
 
 # OS files
-.DS_Store
 .DS_Store?
 ._*
 .Spotlight-V100
 .Trashes
 ehthumbs.db
-Thumbs.db
 
 # Testing
 coverage/
 .nyc_output/
+test-results/
+playwright-report/
+e2e_output*.log
 
 # Temporary files
 *.tmp
 *.temp
-update-api-key.ps1
+*.log
+
+# Debug files
+server/debug_models.ts
+server/server_debug*.log
+client/test_output*.txt
 
 # Deployment
 .vercel
 .netlify
-
-# Logs
-logs/
-*.log
-npm-debug.log*
-yarn-debug.log*
-yarn-error.log*
-
